@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: "Noto Sans KR", sans-serif;
+      margin: 40px;
+      line-height: 1.7;
+    }
+    h1 {
+      color: #007bff;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 8px;
+    }
+    .day-title {
+      margin-top: 24px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .entry {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📅 여행 일정 요약</h1>
+  <div class="content">
+    {{ result | safe }}
+  </div>
+</body>
+</html>

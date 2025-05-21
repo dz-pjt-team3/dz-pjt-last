@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}숙소 추천{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/acc.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="grid-layout">
+  <!-- 🔹 왼쪽: 지역 입력 + 숙소 리스트 -->
+  <div class="left-panel">
+    <h3>지역 입력</h3>
+    <form method="POST">
+      <input type="text" name="region" placeholder="예: 부산 해운대" value="{{ region }}" required>
+      <select name="category">
+        <option value="" {% if not selected_category %}selected{% endif %}>(선택사항) 숙소 종류</option>
+        <option value="호텔" {% if selected_category == "호텔" %}selected{% endif %}>호텔</option>
+        <option value="모텔" {% if selected_category == "모텔" %}selected{% endif %}>모텔</option>
+        <option value="리조트" {% if selected_category == "리조트" %}selected{% endif %}>리조트</option>
+        <option value="펜션" {% if selected_category == "펜션" %}selected{% endif %}>펜션</option>
+        <option value="게스트하우스" {% if selected_category == "게스트하우스" %}selected{% endif %}>게스트하우스</option>
+      </select>
+      <div style="text-align: right;">
+        <button type="submit">검색</button>
+      </div>
+    </form>
+
+    <ul class="place-list">
+      {% for place in places %}
+      <li class="place-item" data-lat="{{ place.lat }}" data-lng="{{ place.lng }}">
+        <strong>{{ place.name }}</strong><br>
+        <small>{{ place.address }}</small>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- 🔹 가운데: 지도 + 숙소 정보 박스 -->
+  <div class="center-panel">
+    <h3>지도</h3>
+    <div id="map" style="width: 100%; height: 500px;"></div>
+
+    <!-- ✅ 지도 하단 숙소 info-box -->
+    <div id="info-box" style="display:none; margin-top: 20px; padding: 16px; background: #f9f9f9; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <h3 id="info-name"></h3>
+      <p><strong>주소:</strong> <span id="info-address"></span></p>
+      <p><strong>전화:</strong> <span id="info-phone"></span></p>
+      <p><strong>종류:</strong> <span id="info-category"></span></p>
+      <p><strong>링크:</strong> <a id="info-link" href="#" target="_blank">카카오맵에서 보기</a></p>
+    </div>
+  </div>
+
+  <!-- 🔹 오른쪽: GPT 유튜브 숙소 추천 -->
+  <div class="right-panel">
+    <h3>유튜브 숙소 추천</h3>
+    <div class="youtube-list">
+      {% for video in youtube_videos %}
+      <div class="youtube-card">
+        <a href="{{ video.url }}" target="_blank">
+          <img src="{{ video.thumbnail }}" alt="{{ video.title }}">
+        </a>
+        <p class="video-title">
+          <a href="{{ video.url }}" target="_blank">{{ video.title }}</a>
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Kakao 지도 JS -->
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_key }}&autoload=false"></script>
+<script>
+kakao.maps.load(function () {
+  const mapContainer = document.getElementById('map');
+  const center = new kakao.maps.LatLng({{ center_lat }}, {{ center_lng }});
+  const map = new kakao.maps.Map(mapContainer, {
+    center: center,
+    level: 5
+  });
+
+  const markerList = [];
+  const places = {{ places | tojson | safe }}; // ✅ 중복 변수 방지
+
+  function showInfoBox(place) {
+    document.getElementById("info-name").innerText = place.name;
+    document.getElementById("info-address").innerText = place.address || "정보 없음";
+    document.getElementById("info-phone").innerText = place.phone || "정보 없음";
+    document.getElementById("info-link").href = place.url || "#";
+    document.getElementById("info-box").style.display = "block";
+    document.getElementById("info-category").innerText = place.category || "정보 없음";
+  }
+
+  document.querySelectorAll('.place-item').forEach(item => {
+    const lat = parseFloat(item.dataset.lat);
+    const lng = parseFloat(item.dataset.lng);
+    const name = item.querySelector('strong').innerText;
+
+    const pos = new kakao.maps.LatLng(lat, lng);
+    const marker = new kakao.maps.Marker({ map: map, position: pos });
+
+    const info = new kakao.maps.InfoWindow({
+      content: `<div style="padding:6px;font-size:13px;"><b>${name}</b></div>`
+    });
+
+    markerList.push({ marker, info });
+
+    kakao.maps.event.addListener(marker, 'click', () => {
+      markerList.forEach(m => m.info.close());
+      info.open(map, marker);
+
+      const matched = placeData.find(p => parseFloat(p.lat) === lat && parseFloat(p.lng) === lng);
+      if (matched) showInfoBox(matched);
+    });
+
+    item.addEventListener('click', () => {
+      map.setCenter(pos);
+      map.setLevel(4);
+      markerList.forEach(m => m.info.close());
+      info.open(map, marker);
+
+      const matched = placeData.find(p => parseFloat(p.lat) === lat && parseFloat(p.lng) === lng);
+      if (matched) showInfoBox(matched);
+    });
+  });
+});
+</script>
+{% endblock %}

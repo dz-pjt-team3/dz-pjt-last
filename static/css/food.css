@@ -1,0 +1,93 @@
+.grid-layout {
+  display: flex;
+  gap: 20px;
+  margin-top: 70px;  /* ✅ 네비게이션 바와의 간격을 넓힘 */
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-bottom: 20px;
+}
+
+.left-panel, .center-panel, .right-panel {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.left-panel {
+  width: 300px;
+  flex-shrink: 0; /* ✅ 줄어들지 않도록 고정 */
+}
+
+.center-panel,
+.right-panel {
+  flex: 1; /* ✅ 나머지 영역은 1:1로 자동 분배 */
+  min-width: 0;
+}
+
+/* ✅ 장소 리스트 (왼쪽) */
+.place-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 20px;
+}
+
+.place-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.place-item:hover {
+  background-color: #f0f8ff;
+}
+
+/* ✅ 유튜브 추천 영역 스타일 */
+.youtube-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 0;
+  margin: 0;
+}
+
+.youtube-card {
+  width: 100%;
+  max-width: 280px;
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  text-align: center;
+}
+
+.youtube-card:hover {
+  transform: translateY(-5px);
+}
+
+.youtube-card img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid #eee;
+  border-radius: 0;
+}
+
+.video-title {
+  margin: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #131414;
+  line-height: 1.4;
+}
+
+.video-title a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.video-title a:hover {
+  text-decoration: underline;
+}
