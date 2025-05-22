@@ -45,26 +45,16 @@ travelapp/
 │   ├── plan.css           # 일정 생성 & 지도 페이지
 │   ├── sidebar.css        # 일정 생성 페이지(사이드바)
 │   └── style.css          # 추가 커스터마이징
-
-# install
-pip install Flask            # 웹 프레임워크
-pip install python-dotenv    # .env 환경변수 로드
-pip install openai           # OpenAI API 클라이언트
-pip install requests         # Kakao REST API 호출용
-pip install markdown         # GPT 응답(마크다운→HTML) 변환
-pip install WeasyPrint       # 
 ```
 
 ---------------------↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓---------------------
 # 배포
 ```
 requirements.txt
-L Flask
-L python-dotenv
-L openai
-L requests
-L markdown
-L WeasyPrint
-
-app.py파일에 pip install -r requirements.txt 삽입
+L Flask             # 웹 프레임워크
+L python-dotenv     # .env 환경변수 로드
+L openai            # OpenAI API 클라이언트
+L requests          # Kakao REST API 호출용
+L markdown          # GPT 응답(마크다운→HTML) 변환
+L WeasyPrint        #
 ```
