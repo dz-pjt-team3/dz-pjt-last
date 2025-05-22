@@ -150,33 +150,112 @@ kakao.maps.load(function () {
 
   // 2) 마커 데이터 및 딕셔너리
   const markerData = {{ markers | tojson | safe }};
-  const markerDict = {};
+  
+  // 3) 일차별 색상 정의
+  const colors = {
+    '1일차': '#FF5858',
+    '2일차': '#3F88C5',
+    '3일차': '#82C91E',
+    // 더 많은 일차가 있으면 여기에 추가
+  };
 
-  // 3) 마커 생성 및 클릭 이벤트 등록
+  // 4) markerData → 일차별 그룹핑
+  const dataByDay = {};
   markerData.forEach(m => {
-    const pos = new kakao.maps.LatLng(m.lat, m.lng);
-    const marker = new kakao.maps.Marker({ map, position: pos });
-    const info = new kakao.maps.InfoWindow({
-      content: `
-        <div style="display: inline-block; white-space: nowrap; padding:6px 10px; font-size:13px; font-family:'Malgun Gothic';">
-          <b>${m.day} ${m.time}</b><br>
-          <b>🏠${m.name}</b><br>
-        </div>
-        `,
-      removable: true
-    });
-
-    // 마커 클릭 시 InfoWindow 표시
-    kakao.maps.event.addListener(marker, 'click', () => {
-      if (currentInfoWindow) currentInfoWindow.close();
-      info.open(map, marker);
-      currentInfoWindow = info;
-    });
-
-    markerDict[m.name] = { marker, info, pos };
+    if (!dataByDay[m.day]) dataByDay[m.day] = [];
+    dataByDay[m.day].push(m);
   });
 
-  // 4) 리스트 클릭 시 해당 마커로 이동 및 InfoWindow 오픈
+  // 5) SVG 원형 마커 이미지 생성 헬퍼
+  function createCircleSVG(color) {
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+        <circle cx="12" cy="12" r="10" fill="${color}" stroke="#fff" stroke-width="2"/>
+      </svg>`;
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg.trim());
+  }
+
+  // 6) 일차별 마커·폴리라인 그리기 & markerDict 재구성
+  const markerDict = {};
+  Object.entries(dataByDay).forEach(([day, places]) => {
+    const color = colors[day] || '#000000';
+    const markerImage = new kakao.maps.MarkerImage(
+      createCircleSVG(color),
+      new kakao.maps.Size(24, 24),
+      { offset: new kakao.maps.Point(12, 12) }
+    );
+
+    // 6-1) 마커 생성 및 InfoWindow
+    places.forEach(p => {
+      const pos = new kakao.maps.LatLng(p.lat, p.lng);
+      const marker = new kakao.maps.Marker({
+        map,
+        position: pos,
+        image: markerImage,
+        title: `${day} · ${p.name}`
+      });
+      const info = new kakao.maps.InfoWindow({
+        content: `
+          <div style="display:inline-block;white-space:nowrap;padding:6px 10px;font-size:13px;font-family:'Malgun Gothic';">
+            <b>${day} ${p.time}</b><br>
+            <b>🏠 ${p.name}</b>
+          </div>`,
+        removable: true
+      });
+      kakao.maps.event.addListener(marker, 'click', () => {
+        if (currentInfoWindow) currentInfoWindow.close();
+        info.open(map, marker);
+        currentInfoWindow = info;
+      });
+      markerDict[p.name] = { marker, info, pos };
+    });
+
+// 6-2) 일차별 다중 경유지 길찾기 API 호출 후 폴리라인 그리기
+   if (places.length >= 2) {
+     // 좌표 문자열 배열: ["lng,lat", ...]
+     const coords = places.map(p => `${p.lng},${p.lat}`);
+     const origin      = coords[0];
+     const destination = coords[coords.length - 1];
+     const waypoints   = coords.slice(1, -1).join('|'); // 중간 경유지
+
+     const url = `https://apis-navi.kakaomobility.com/v1/waypoints/directions`
+               + `?origin=${origin}`
+               + `&destination=${destination}`
+               + (waypoints ? `&waypoints=${waypoints}` : '');
+
+     fetch(url, {
+       headers: { Authorization: `KakaoAK ${KAKAO_REST_API_KEY}` }
+     })
+     .then(res => res.json())
+     .then(json => {
+       // 첫 번째 routes → 섹션[0] → path 배열 추출
+       const sections = json.routes[0].sections;
+      let routePath = [];
+      sections.forEach(section => {
+        section.path.forEach(pt => {
+          routePath.push(new kakao.maps.LatLng(pt[1], pt[0]));
+        });
+      });
+      console.log(
+      `[폴리라인] ${day}`, 
+      `points=${routePath.length}`, 
+      `color=${color}`
+    );
+    
+       new kakao.maps.Polyline({
+         path: routePath,
+         strokeWeight: 4,
+         strokeColor: color,
+         strokeOpacity: 0.8,
+         strokeStyle: 'solid',
+         map
+       });
+     })
+     .catch(err => console.error(day, '경로조회 오류:', err));
+   }
+  });
+
+  // 7) 리스트 클릭 시 해당 마커로 이동 및 InfoWindow 오픈
   document.querySelectorAll('.place-link').forEach(el => {
     el.addEventListener('click', () => {
       const name = el.dataset.name;
@@ -189,7 +268,7 @@ kakao.maps.load(function () {
       currentInfoWindow = data.info;
     });
   });
-// 5) 다중 경유지 Polyline 표시
+// 8) 다중 경유지 Polyline 표시
     const routeData = {{ route_data | tojson | safe }};
     if (routeData.routes && routeData.routes.length > 0) {
       const sections = routeData.routes[0].sections;
