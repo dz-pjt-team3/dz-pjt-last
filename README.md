@@ -60,3 +60,22 @@ L requests          # Kakao REST API 호출용
 L markdown          # GPT 응답(마크다운→HTML) 변환
 L WeasyPrint        #
 ```
+
+# 설치
+```
+MSYS2 설치 : https://www.msys2.org/
+- msys2-x86_64-*.exe 다운로드
+# 1 패키지 데이터베이스 및 기본 패키지 업데이트
+pacman -Syu
+# 2 터미널을 닫았다가 다시 열고
+pacman -Su
+
+MSYS2에는 mingw64와 mingw32 환경이 있는데, Python 64비트라면 mingw64를 사용하세요.
+# mingw64용 GTK3, Pango, Cairo, GDK-Pixbuf 등 설치
+pacman -S --needed \
+  mingw-w64-x86_64-toolchain \
+  mingw-w64-x86_64-gtk3 \
+  mingw-w64-x86_64-pango \
+  mingw-w64-x86_64-gdk-pixbuf2 \
+  mingw-w64-x86_64-cairo
+```
