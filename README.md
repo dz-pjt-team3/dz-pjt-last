@@ -19,6 +19,7 @@ AI(Generative AI)를 활용해 여행 일정을 자동으로 생성하고, 다�
 ```
 travelapp/
 ├── app.py                 # 메인 플라스크 애플리케이션
+├── naver_blog.py          # 네이버 블로그 연동
 ├── requirements.txt       # 파이썬 패키지 목록
 ├── .env                   # 환경 변수 파일
 │
