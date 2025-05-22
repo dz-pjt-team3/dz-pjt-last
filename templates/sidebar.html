@@ -70,28 +70,38 @@
   </div>
 </div>
 
-<!-- ✅ 토글 & 초기화 스크립트 -->
-<script>
-  function resetSidebarForm() {
-    const form = document.getElementById('sidebar-form');
-    if (!form) return;
+  <!-- ✅ 토글 & 초기화 스크립트 -->
+  <script>
+    function resetSidebarForm() {
+      const form = document.getElementById('sidebar-form');
+      if (!form) return;
 
-    // 1. 기본 HTML 폼 리셋
-    form.reset();
+      // 1. 기본 HTML 폼 리셋
+      form.reset();
 
-    // 2. 수동 초기화 (Flask 렌더링된 값들을 초기화하기 위해 강제로 비우기)
-    form.querySelectorAll('input[type="date"], input[type="text"], textarea').forEach(el => el.value = '');
-    form.querySelectorAll('select').forEach(sel => sel.selectedIndex = 0);
-    form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    const sidebar = document.getElementById('sidebar');
-    const toggle = document.getElementById('sidebar-toggle');
-    if (sidebar && toggle) {
-      toggle.addEventListener('click', () => {
-        sidebar.classList.toggle('open');
-      });
+      // 2. 수동 초기화 (Flask 렌더링된 값들을 초기화하기 위해 강제로 비우기)
+      form.querySelectorAll('input[type="date"], input[type="text"], textarea').forEach(el => el.value = '');
+      form.querySelectorAll('select').forEach(sel => sel.selectedIndex = 0);
+      form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const sidebar = document.getElementById('sidebar');
+      const toggle = document.getElementById('sidebar-toggle');
+      if (sidebar && toggle) {
+        toggle.addEventListener('click', () => {
+          sidebar.classList.toggle('open');
+        });
+      }
+    });
+  </script>
+<!--여행날짜 선택버튼-->
+<script>
+document.querySelectorAll('input[type="date"]').forEach(inp => {
+  inp.style.cursor = 'pointer';
+  inp.addEventListener('click', e => {
+    if (typeof inp.showPicker === 'function') inp.showPicker();
+    else inp.focus();
   });
+});
 </script>

@@ -79,3 +79,24 @@
 .star-rating label:hover ~ label {
   color: gold;
 }
+/* date-picker 내부 input */
+.date-picker input {
+  pointer-events: none;                      /* 포인터 이벤트 비활성화 */
+}
+
+/* date-picker 래퍼 */
+.date-picker {
+  display: inline-block;                     /* 내용 크기만큼 차지 */
+  padding: 0;                                /* 주변 여백 없음 */
+  cursor: pointer;                           /* 클릭 커서 */
+}
+
+/* 호버 시 배경 반전 효과 */
+.date-picker:hover {
+  background-color: white;                   /* 배경: 흰색 */
+}
+
+/* date-picker 레이블 */
+.date-picker label {
+  cursor: pointer;                           /* 클릭 커서 */
+}
