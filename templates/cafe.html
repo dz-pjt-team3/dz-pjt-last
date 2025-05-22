@@ -6,24 +6,34 @@
 {% endblock %}
 
 {% block content %}
+<!-- Flask에서 region/category를 JS에서도 쓰기 위해 변수로 먼저 선언 -->
+<script>
+  const region = "{{ region }}";
+  const category = "{{ selected_category }}";
+</script>
+
 <div class="grid-layout">
-  <!-- 🔹 왼쪽: 지역 입력 + 카페 리스트 -->
+  <!--  왼쪽: 입력창 + 카페 리스트 -->
   <div class="left-panel">
     <h3>지역 입력</h3>
     <form method="POST">
-      <input type="text" name="region" placeholder="예: 홍대입구역" value="{{ region }}" required>
+      <input type="text" name="region" placeholder="예: 부산 해운대" value="{{ region }}" autocomplete="off" required>
+      
+      <h3>카페 종류</h3>
       <select name="category">
-        <option value="" {% if not selected_category %}selected{% endif %}>(선택사항) 카페 종류</option>
+        <option value="" {% if not selected_category %}selected{% endif %}>전체</option>
         <option value="베이커리" {% if selected_category == "베이커리" %}selected{% endif %}>베이커리카페</option>
         <option value="디저트" {% if selected_category == "디저트" %}selected{% endif %}>디저트카페</option>
         <option value="브런치" {% if selected_category == "브런치" %}selected{% endif %}>브런치카페</option>
         <option value="보드" {% if selected_category == "보드" %}selected{% endif %}>보드카페</option>
         <option value="대형" {% if selected_category == "대형" %}selected{% endif %}>대형카페</option>
       </select>
+
       <div style="text-align: right;">
-          <button type="submit">검색</button>
-        </div>
-      </form>
+        <button type="submit">검색</button>
+      </div>
+    </form>
+
     <ul class="place-list">
       {% for place in places %}
       <li class="place-item" data-lat="{{ place.lat }}" data-lng="{{ place.lng }}">
@@ -34,7 +44,7 @@
     </ul>
   </div>
 
-  <!-- 🔹 가운데: 지도 + 카페 상세 정보 -->
+  <!--  가운데: 지도 + 상세 정보 + 블로그 후기 -->
   <div class="center-panel">
     <h3>지도</h3>
     <div id="map" style="width: 100%; height: 500px;"></div>
@@ -45,10 +55,18 @@
       <p><strong>전화:</strong> <span id="info-phone"></span></p>
       <p><strong>종류:</strong> <span id="info-category"></span></p>
       <p><strong>링크:</strong> <a id="info-link" href="#" target="_blank">카카오맵에서 보기</a></p>
+
+      <!-- ✅ 블로그 후기 영역 -->
+      <div id="blog-section" style="margin-top: 20px;">
+        <h4><span class="naver-green">NAVER</span> 블로그 후기</h4>
+        <div id="blog-list">
+          <p>카페를 클릭하면 블로그 후기가 여기에 표시됩니다.</p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 🔹 오른쪽: GPT 유튜브 추천 -->
+  <!--  오른쪽: GPT 유튜브 추천 -->
   <div class="right-panel">
     <h3>유튜브 카페 추천</h3>
     <div class="youtube-list">
@@ -66,7 +84,7 @@
   </div>
 </div>
 
-<!-- ✅ Kakao 지도 JS -->
+<!--  Kakao 지도 JS -->
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_key }}&autoload=false"></script>
 <script>
 kakao.maps.load(function () {
@@ -87,6 +105,33 @@ kakao.maps.load(function () {
     document.getElementById("info-link").href = place.url || "#";
     document.getElementById("info-box").style.display = "block";
     document.getElementById("info-category").innerText = place.category || "정보 없음";
+
+    fetch("/blog_search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ query: `${region} ${place.name}` })
+    })
+    .then(res => res.json())
+    .then(data => {
+      const blogList = document.getElementById("blog-list");
+      blogList.innerHTML = "";
+      if (data.length > 0) {
+        data.forEach(post => {
+          const div = document.createElement("div");
+          div.className = "blog-card";
+          div.style = "background:#fff; border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:8px;";
+          div.innerHTML = `<a href="${post.link}" target="_blank" style="font-weight:bold;">${post.title}</a><br><small>${post.description}</small>`;
+          blogList.appendChild(div);
+        });
+      } else {
+        blogList.innerHTML = "<p>블로그 후기가 없습니다.</p>";
+      }
+    })
+    .catch(err => {
+      document.getElementById("blog-list").innerHTML = "<p>블로그 불러오기 오류</p>";
+    });
   }
 
   document.querySelectorAll('.place-item').forEach(item => {
@@ -106,7 +151,6 @@ kakao.maps.load(function () {
     kakao.maps.event.addListener(marker, 'click', () => {
       markerList.forEach(m => m.info.close());
       info.open(map, marker);
-
       const matched = places.find(p => parseFloat(p.lat) === lat && parseFloat(p.lng) === lng);
       if (matched) showInfoBox(matched);
     });
@@ -116,7 +160,6 @@ kakao.maps.load(function () {
       map.setLevel(4);
       markerList.forEach(m => m.info.close());
       info.open(map, marker);
-
       const matched = places.find(p => parseFloat(p.lat) === lat && parseFloat(p.lng) === lng);
       if (matched) showInfoBox(matched);
     });
