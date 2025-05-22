@@ -139,6 +139,16 @@
 <!-- Kakao Maps JavaScript SDK -->
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_key }}&autoload=false"></script>
 <script>
+
+// 경로(지도 거리 및 시간)
+async function fetchDirections(origin, destination) {
+  const res  = await fetch(`/api/directions?origin=${origin}&destination=${destination}`);
+  const json = await res.json();
+  if (!json.routes) throw new Error(json.error || '경로정보 없음');
+  // summary 에 distance(m), duration(s) 정보가 들어 있습니다.
+  return json.routes[0].summary;
+}
+
 // Kakao Maps API 로드 후 실행
 kakao.maps.load(function () {
   let currentInfoWindow = null;
@@ -148,7 +158,7 @@ kakao.maps.load(function () {
   const center = new kakao.maps.LatLng({{ center_lat }}, {{ center_lng }});
   const map = new kakao.maps.Map(mapContainer, { center: center, level: 6 });
 
-  // 교통정보 오버레이
+  // 실시간 교통정보 오버레이
   map.addOverlayMapTypeId(kakao.maps.MapTypeId.TRAFFIC);
 
   // 2) 마커 데이터 및 딕셔너리
@@ -197,13 +207,32 @@ kakao.maps.load(function () {
         image: markerImage,
         title: `${day} · ${p.name}`
       });
+      
+      // InfoWindow 내용 조립 시작
+      let content = `
+        <div style="display:inline-block;white-space:nowrap;padding:6px 10px;font-size:13px;font-family:'Malgun Gothic';">
+          <b>${day} ${p.time}</b><br>
+          <b>🏠 ${p.name}</b>
+      `;
+
+      // 이전 지점이 있으면 거리·소요시간 API 호출
+      if (prevPos) {
+        try {
+          const originStr      = `${prevPos.getLng()},${prevPos.getLat()}`;
+          const destinationStr = `${p.lng},${p.lat}`;
+          const summary        = await fetchDirections(originStr, destinationStr);
+          const km   = (summary.distance  / 1000).toFixed(1);
+          const min  = Math.ceil(summary.duration / 60);
+          content += `<br>거리: ${km}km, 소요: ${min}분`;
+        } catch (e) {
+          console.warn(day, p.name, '거리조회 실패:', e);
+        }
+      }
+      content += `</div>`;
+
+      // InfoWindow 생성·이벤트
       const info = new kakao.maps.InfoWindow({
-        content: `
-          <div style="display:inline-block;white-space:nowrap;padding:6px 10px;font-size:13px;font-family:'Malgun Gothic';">
-            <b>${day} ${p.time}</b><br>
-            <b>🏠 ${p.name}</b>
-          </div>`,
-        removable: true
+        content, removable: true
       });
       kakao.maps.event.addListener(marker, 'click', () => {
         if (currentInfoWindow) currentInfoWindow.close();
@@ -211,6 +240,7 @@ kakao.maps.load(function () {
         currentInfoWindow = info;
       });
       markerDict[p.name] = { marker, info, pos };
+      prevPos = pos;
     });
 
 // 6-2) 일차별 다중 경유지 길찾기 API 호출 후 폴리라인 그리기

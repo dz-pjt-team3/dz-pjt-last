@@ -15,6 +15,24 @@ import uuid
 load_dotenv()
 app = Flask(__name__)
 
+# 카카오 길찾기 API 이용(대리요청)
+@app.route('/api/directions')
+def get_directions():
+    origin      = request.args.get('origin')      # "lng,lat"
+    destination = request.args.get('destination') # "lng,lat"
+    if not origin or not destination:
+        return jsonify({'error':'origin, destination 파라미터 필요'}), 400
+
+    kakao_url = 'https://apis-navi.kakaomobility.com/v1/directions'
+    params = {'origin': origin, 'destination': destination}
+    kakao_key = os.environ.get('KAKAO_REST_API_KEY')
+    if not kakao_key:
+        return jsonify({'error':'KAKAO_REST_API_KEY 미설정'}), 500
+
+    headers = {'Authorization': f'KakaoAK {kakao_key}'}
+    resp = requests.get(kakao_url, params=params, headers=headers, timeout=5)
+    return jsonify(resp.json()), resp.status_code
+
 # OpenAI 클라이언트 생성
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 SHARE_FILE = 'share_data.json'    # ✅ 공유된 일정 저장 파일
@@ -277,7 +295,7 @@ def plan():
             {yt_info_str}
 
             **출력 형식**
-            
+
             여행날짜 (요일)\n            
             1일차:\n
             1) "장소명"\n
