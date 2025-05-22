@@ -148,6 +148,9 @@ kakao.maps.load(function () {
   const center = new kakao.maps.LatLng({{ center_lat }}, {{ center_lng }});
   const map = new kakao.maps.Map(mapContainer, { center: center, level: 6 });
 
+  // 교통정보 오버레이
+  map.addOverlayMapTypeId(kakao.maps.MapTypeId.TRAFFIC);
+
   // 2) 마커 데이터 및 딕셔너리
   const markerData = {{ markers | tojson | safe }};
   
