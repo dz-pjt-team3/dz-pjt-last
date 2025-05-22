@@ -1,24 +1,30 @@
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 48px;
-  z-index: 2000;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(90deg, #4facfe, #00f2fe);
+/* ===== 🎈네비게이션 바 ===== */
 
-  color: white;
-  padding: 0 16px;
+/* 네비게이션 바 컨테이너 */
+.navbar {
+  position: fixed;                           /* 화면에 고정 */
+  top: 0;                                    /* 상단 0 위치 */
+  left: 0;                                   /* 좌측 0 위치 */
+  width: 100%;                               /* 전체 너비 */
+  height: 48px;                              /* 고정 높이 */
+  z-index: 2000;                             /* 쌓임 레벨 최상위 */
+  display: flex;                             /* 플렉스 컨테이너 */
+  justify-content: space-between;            /* 양 끝 정렬 */
+  align-items: center;                       /* 세로 중앙 정렬 */
+  background: linear-gradient(90deg, #4facfe, #00f2fe); /* 그라데이션 배경 */
+  color: white;                              /* 텍스트 색상 */
+  padding: 0 16px;                           /* 좌우 패딩 */
 }
+
+/* 로고 / 왼쪽 영역 */
 .navbar-left .logo {
-  color: white;
-  font-size: 20px;
-  text-decoration: none;
-  font-weight: bold;
+  color: white;                            /* 텍스트 흰색 */
+  font-size: 20px;                           /* 폰트 크기 */
+  text-decoration: none;                     /* 밑줄 제거 */
+  font-weight: bold;                         /* 볼드체 */
 }
+
+/* 메인 컨텐츠 래퍼 */
 .main-wrapper {
-  margin-top: 48px; /* 네비바 높이만큼 밀기 */
+  margin-top: 48px;  /* 내비게이션 바 높이와 동일하게 설정 */
 }
