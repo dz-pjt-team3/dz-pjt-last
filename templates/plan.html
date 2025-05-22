@@ -6,6 +6,9 @@
 <header class="site-header">
   <h1>AI 여행 일정 생성기</h1>
 </header>
+<script>
+  const KAKAO_REST_API_KEY = "{{ kakao_rest_api_key }}";
+</script>
 
 <div class="grid-container">
   <!-- ✅ 왼쪽: 일정 출력 영역 -->
@@ -116,7 +119,6 @@
   .place-link:hover {
     background-color: #eaf4ff;
   }
-  /*여행일정 스크롤롤*/
   .itinerary-box {
     height: 400px;      /* 지도 높이와 동일하게 */
     overflow-y: auto;   /* 세로 스크롤 활성화 */
@@ -139,8 +141,6 @@
 <!-- Kakao Maps JavaScript SDK -->
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_key }}&autoload=false"></script>
 <script>
-
-// 경로(지도 거리 및 시간)
 async function fetchDirections(origin, destination) {
   const res  = await fetch(`/api/directions?origin=${origin}&destination=${destination}`);
   const json = await res.json();
@@ -148,7 +148,6 @@ async function fetchDirections(origin, destination) {
   // summary 에 distance(m), duration(s) 정보가 들어 있습니다.
   return json.routes[0].summary;
 }
-
 // Kakao Maps API 로드 후 실행
 kakao.maps.load(function () {
   let currentInfoWindow = null;
@@ -158,18 +157,18 @@ kakao.maps.load(function () {
   const center = new kakao.maps.LatLng({{ center_lat }}, {{ center_lng }});
   const map = new kakao.maps.Map(mapContainer, { center: center, level: 6 });
 
-  // 실시간 교통정보 오버레이
-  map.addOverlayMapTypeId(kakao.maps.MapTypeId.TRAFFIC);
+  // 교통정보 오버레이
+    map.addOverlayMapTypeId(kakao.maps.MapTypeId.TRAFFIC);
 
-  // 2) 마커 데이터 및 딕셔너리
+  // 2) 마커 데이터(Flat) 받아오기
   const markerData = {{ markers | tojson | safe }};
-  
+
   // 3) 일차별 색상 정의
   const colors = {
     '1일차': '#FF5858',
     '2일차': '#3F88C5',
     '3일차': '#82C91E',
-    // 더 많은 일차가 있으면 여기에 추가
+    // 추가 일자가 있으면 더 넣으세요
   };
 
   // 4) markerData → 일차별 그룹핑
@@ -197,9 +196,11 @@ kakao.maps.load(function () {
       new kakao.maps.Size(24, 24),
       { offset: new kakao.maps.Point(12, 12) }
     );
-
+    
+    let prevPos = null;
+    
     // 6-1) 마커 생성 및 InfoWindow
-    places.forEach(p => {
+    places.forEach(async p => {
       const pos = new kakao.maps.LatLng(p.lat, p.lng);
       const marker = new kakao.maps.Marker({
         map,
@@ -207,7 +208,6 @@ kakao.maps.load(function () {
         image: markerImage,
         title: `${day} · ${p.name}`
       });
-      
       // InfoWindow 내용 조립 시작
       let content = `
         <div style="display:inline-block;white-space:nowrap;padding:6px 10px;font-size:13px;font-family:'Malgun Gothic';">
@@ -229,6 +229,7 @@ kakao.maps.load(function () {
         }
       }
       content += `</div>`;
+      // ──────────────────
 
       // InfoWindow 생성·이벤트
       const info = new kakao.maps.InfoWindow({
@@ -251,57 +252,48 @@ kakao.maps.load(function () {
      const destination = coords[coords.length - 1];
      const waypoints   = coords.slice(1, -1).join('|'); // 중간 경유지
 
-     const url = `https://apis-navi.kakaomobility.com/v1/waypoints/directions`
+     const url = `/api/waypoints-directions`
                + `?origin=${origin}`
                + `&destination=${destination}`
                + (waypoints ? `&waypoints=${waypoints}` : '');
 
-     fetch(url, {
-       headers: { Authorization: `KakaoAK ${KAKAO_REST_API_KEY}` }
-     })
-     .then(res => res.json())
-     .then(json => {
-       // 첫 번째 routes → 섹션[0] → path 배열 추출
-       const sections = json.routes[0].sections;
-      let routePath = [];
-      sections.forEach(section => {
+     fetch(url)
+    .then(res => res.json())
+    .then(json => {
+      // ③ 모든 sections 의 path 좌표를 하나로 합치기
+      const routePath = [];
+      json.routes[0].sections.forEach(section => {
         section.path.forEach(pt => {
           routePath.push(new kakao.maps.LatLng(pt[1], pt[0]));
         });
       });
-      console.log(
-      `[폴리라인] ${day}`, 
-      `points=${routePath.length}`, 
-      `color=${color}`
-    );
-    
-       new kakao.maps.Polyline({
-         path: routePath,
-         strokeWeight: 4,
-         strokeColor: color,
-         strokeOpacity: 0.8,
-         strokeStyle: 'solid',
-         map
-       });
-     })
-     .catch(err => console.error(day, '경로조회 오류:', err));
-   }
+
+      // ④ 일차별 색상으로 폴리라인 그리기
+      new kakao.maps.Polyline({
+        path: routePath,
+        strokeWeight: 4,
+        strokeColor: colors[day],
+        strokeOpacity: 0.8,
+        map
+      });
+    })
+    .catch(err => console.error(`${day} 경로조회 오류:`, err));
+    }
   });
 
-  // 7) 리스트 클릭 시 해당 마커로 이동 및 InfoWindow 오픈
+  // 7) 리스트 클릭 시 해당 마커로 이동(기존 로직 유지)
   document.querySelectorAll('.place-link').forEach(el => {
     el.addEventListener('click', () => {
       const name = el.dataset.name;
       const data = markerDict[name];
       if (!data) return;
-
       if (currentInfoWindow) currentInfoWindow.close();
       map.setCenter(data.pos);
       data.info.open(map, data.marker);
       currentInfoWindow = data.info;
     });
   });
-// 8) 다중 경유지 Polyline 표시
+// 5) 다중 경유지 Polyline 표시
     const routeData = {{ route_data | tojson | safe }};
     if (routeData.routes && routeData.routes.length > 0) {
       const sections = routeData.routes[0].sections;
