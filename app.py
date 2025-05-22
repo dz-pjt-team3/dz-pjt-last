@@ -277,16 +277,16 @@ def plan():
             {yt_info_str}
 
             **출력 형식**
-            1일차:\n
+            1일차: 여행일자 (요일)\n
             1) "장소명"\n
             • 한줄 설명.\n
             • 영업시간 :\n
             • 입장료 or 메뉴추천:\n
-            2일차:\n
+            2일차: 여행일자 (요일)\n
             ...
 
             **출력조건**
-            - 여행일정 모든 장소명 앞에 반드시시 {location} 추가.
+            - 여행일정 모든 장소명 앞에 반드시 {location} 추가.
             - 위 “유튜브 참고 영상”을 참고하여, 각 장소에 대한 추가 설명(추천 이유, 꿀팁 등)을 일정에 반영해주세요.
             - 각 일정에 따라 정해진 장소들 끼리 거리가 멀지않은곳으로 추천해주세요.
             - 교통수단에 따라 일정을 조율해주세요.
@@ -295,19 +295,6 @@ def plan():
             """
 
             raw_result = generate_itinerary(prompt)
-
-            try:
-                start_dt = datetime.strptime(start_date, "%Y-%m-%d")
-                end_dt = datetime.strptime(end_date, "%Y-%m-%d")
-                days = (end_dt - start_dt).days + 1
-                for i in range(days):
-                    tag = f"{i+1}일차"
-                    full_label = f"{tag}: {(start_dt + timedelta(days=i)).strftime('%Y-%m-%d (%A)')}"
-                    if tag in raw_result:
-                        raw_result = raw_result.replace(tag, full_label)
-            except Exception as e:
-                print("📛 요일 계산 오류:", e)
-
             result = markdown.markdown(raw_result)
             place_names = extract_places(raw_result)
             result = linkify_places(result, place_names)
