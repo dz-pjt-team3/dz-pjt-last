@@ -52,6 +52,7 @@ pip install python-dotenv    # .env 환경변수 로드
 pip install openai           # OpenAI API 클라이언트
 pip install requests         # Kakao REST API 호출용
 pip install markdown         # GPT 응답(마크다운→HTML) 변환
+pip install WeasyPrint       # 
 ```
 
 ---------------------↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓---------------------
@@ -63,8 +64,7 @@ L python-dotenv
 L openai
 L requests
 L markdown
+L WeasyPrint
 
 app.py파일에 pip install -r requirements.txt 삽입
 ```
-
-git uplord test
