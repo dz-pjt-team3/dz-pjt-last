@@ -21,6 +21,8 @@ travelapp/
 ├── app.py                 # 메인 플라스크 애플리케이션
 ├── requirements.txt       # 파이썬 패키지 목록
 ├── .env                   # 환경 변수 파일
+├── review_data.json       # 여행지 만족도 리뷰
+├── share_data.json        # pdf저장후 공유
 │
 ├── templates/             # Jinja2 템플릿
 │   │
