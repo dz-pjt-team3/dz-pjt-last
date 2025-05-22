@@ -50,7 +50,7 @@
 
         <label>여행 테마</label>
         <div class="theme-toggle-group">
-          {% set all_themes = ['맛집', '카페', '자연경관', '역사탐방', '축제/이벤트', '쇼핑'] %}
+          {% set all_themes = ['맛집', '카페', '자연경관', '축제', '쇼핑'] %}
           {% for th in all_themes %}
           <input type="checkbox" id="theme{{ loop.index }}" name="theme" value="{{ th }}" {% if th in theme %}checked{% endif %}>
           <label for="theme{{ loop.index }}">{{ th }}</label>
@@ -58,7 +58,7 @@
         </div>
 
         <label>추가 조건을 작성해 주세요</label>
-        <textarea name="user_prompt" rows="4" placeholder="예: 첫날은 동궁과월지를 꼭 넣어주세요.">{{ user_prompt or '' }}</textarea>
+        <textarea name="user_prompt" rows="4" placeholder="예: 첫날은 해운대를 가고싶어요. 둘째날은 친구 1명이 더 합류합니다.">{{ user_prompt or '' }}</textarea>
 
         <!-- ✅ 버튼 영역 -->
         <div style="margin-top: 20px; display: flex; gap: 10px;">
