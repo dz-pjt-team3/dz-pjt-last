@@ -31,7 +31,7 @@ travelapp/
 │   ├── base.html          # 공통 레이아웃
 │   ├── cafe.html          # 카페 검색 페이지
 │   ├── food.html          # 맛집 검색 페이지
-│   ├── index.html         # 홈화면 상단 박스
+│   ├── index.html         # 홈화면
 │   ├── nav.html           # 홈화면 상단 Happy Imagination
 │   ├── plan.html          # 일정 생성 & 지도 페이지
 │   └── sidebar.html       # 일정 생성 페이지(사이드바)
@@ -40,7 +40,7 @@ travelapp/
 │   │
 │   ├── acc.css            # 숙소 검색 페이지
 │   ├── base.css           # 일정 생성 & 지도 페이지
-│   ├── card.css           # 메인 페이지 카드(음식점,카페,숙소소)
+│   ├── card.css           # 메인 페이지 카드(음식점,카페,숙소)
 │   ├── cafe.css           # 카페 검색 페이지
 │   ├── food.css           # 맛집 검색 페이지
 │   ├── hero.css           # 홈화면 상단 박스
@@ -59,7 +59,7 @@ L python-dotenv     # .env 환경변수 로드
 L openai            # OpenAI API 클라이언트
 L requests          # Kakao REST API 호출용
 L markdown          # GPT 응답(마크다운→HTML) 변환
-L WeasyPrint        #
+L WeasyPrint        # 일정결과를 PDF로 저장하는데 사용
 ```
 
 # 설치
@@ -79,4 +79,14 @@ pacman -S --needed \
   mingw-w64-x86_64-pango \
   mingw-w64-x86_64-gdk-pixbuf2 \
   mingw-w64-x86_64-cairo
+```
+
+# 환경변수(.env)
+```
+OPENAI_API_KEY=
+KAKAO_REST_API_KEY=
+KAKAO_JAVASCRIPT_KEY=
+YOUTUBE_API_KEY=
+NAVER_CLIENT_ID=
+NAVER_CLIENT_SECRET=
 ```
