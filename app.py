@@ -649,5 +649,23 @@ def acc():
                            selected_category=selected_category,
                            region=region)
 
+# 네이버 블로그
+@app.route("/blog_search", methods=["POST"])
+def blog_search():
+    try:
+        data = request.get_json()
+        query = data.get("query", "")
+
+        print("블로그 검색 쿼리:", query)  # 여기에 로깅 추가!
+
+        if not query:
+            return jsonify({"error": "검색어 없음"}), 400
+
+        blog_posts = search_naver_blog(query)
+        return jsonify(blog_posts)
+    except Exception as e:
+        print("블로그 검색 오류:", e)  # 에러 로그
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)
