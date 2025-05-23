@@ -81,3 +81,14 @@ pacman -S --needed \
   mingw-w64-x86_64-gdk-pixbuf2 \
   mingw-w64-x86_64-cairo
 ```
+
+# 환경설정
+```
+OPENAI_API_KEY=
+OPENAI_API_MODEL=
+KAKAO_REST_API_KEY=
+KAKAO_JAVASCRIPT_KEY=
+YOUTUBE_API_KEY=
+NAVER_CLIENT_ID=
+NAVER_CLIENT_SECRET=
+```
