@@ -31,23 +31,24 @@ travelapp/
 │   ├── base.html          # 공통 레이아웃
 │   ├── cafe.html          # 카페 검색 페이지
 │   ├── food.html          # 맛집 검색 페이지
-│   ├── index.html         # 홈화면
+│   ├── index.html         # 홈화면 상단 박스
 │   ├── nav.html           # 홈화면 상단 Happy Imagination
+│   ├── pdf_template.html  # pdf저장 페이지
 │   ├── plan.html          # 일정 생성 & 지도 페이지
+│   ├── shared_plan.html   # 일정 공유 페이지
 │   └── sidebar.html       # 일정 생성 페이지(사이드바)
 │
 └── static/
 │   │
 │   ├── acc.css            # 숙소 검색 페이지
 │   ├── base.css           # 일정 생성 & 지도 페이지
-│   ├── card.css           # 메인 페이지 카드(음식점,카페,숙소)
+│   ├── card.css           # 메인 페이지 카드(음식점,카페,숙소소)
 │   ├── cafe.css           # 카페 검색 페이지
 │   ├── food.css           # 맛집 검색 페이지
 │   ├── hero.css           # 홈화면 상단 박스
 │   ├── nav.css            # 홈화면 상단 Happy Imagination
 │   ├── plan.css           # 일정 생성 & 지도 페이지
-│   ├── sidebar.css        # 일정 생성 페이지(사이드바)
-│   └── style.css          # 추가 커스터마이징
+│   └── sidebar.css        # 일정 생성 페이지(사이드바)
 ```
 
 ---------------------↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓---------------------
@@ -59,7 +60,7 @@ L python-dotenv     # .env 환경변수 로드
 L openai            # OpenAI API 클라이언트
 L requests          # Kakao REST API 호출용
 L markdown          # GPT 응답(마크다운→HTML) 변환
-L WeasyPrint        # 일정결과를 PDF로 저장하는데 사용
+L WeasyPrint        # 일정 결과를 PDF로 저장하는 데 사용
 ```
 
 # 설치
@@ -79,14 +80,4 @@ pacman -S --needed \
   mingw-w64-x86_64-pango \
   mingw-w64-x86_64-gdk-pixbuf2 \
   mingw-w64-x86_64-cairo
-```
-
-# 환경변수(.env)
-```
-OPENAI_API_KEY=
-KAKAO_REST_API_KEY=
-KAKAO_JAVASCRIPT_KEY=
-YOUTUBE_API_KEY=
-NAVER_CLIENT_ID=
-NAVER_CLIENT_SECRET=
 ```
