@@ -463,30 +463,30 @@ def search_youtube_videos(query, max_results=6):
             })
     return videos
 
-# ✅ 음식점 페이지
+#  음식점 페이지
 @app.route("/food", methods=["GET", "POST"])
 def food():
     places = []
     youtube_videos = []
-    center_lat = 37.5665
-    center_lng = 126.9780
-    selected_category = ""  # ✅ 선택된 카테고리 UI에서 유지하기 위함
+    blog_posts = []  #  블로그 리스트 초기화!
+    center_lat = 37.241086  # 기본 독도 중심
+    center_lng = 131.864436
+    selected_category = ""
     region = ""
 
     if request.method == "POST":
         region = request.form.get("region")
-        category = request.form.get("category")  # ✅ select box에서 받은 값
-        selected_category = category  # UI에 다시 넘겨주기 위함
+        category = request.form.get("category")
+        selected_category = category
 
-        # ✅ 검색어 조합 (예: 서울 을지로 + 양식)
         search_query = f"{region} {category}".strip() if category else region
 
-        # ✅ 1. Kakao API 음식점 검색
+        #  1. Kakao API 음식점 검색
         try:
             REST_KEY = os.environ["KAKAO_REST_API_KEY"]
             url = "https://dapi.kakao.com/v2/local/search/keyword.json"
             headers = {"Authorization": f"KakaoAK {REST_KEY}"}
-            params = {"query": f"{search_query} 맛집", "size": 10}
+            params = {"query": f"{search_query} 맛집", "size": 15}
 
             res = requests.get(url, headers=headers, params=params)
             res.raise_for_status()
@@ -509,47 +509,54 @@ def food():
                 center_lat = float(places[0]["lat"])
                 center_lng = float(places[0]["lng"])
 
+                #  여기에서 블로그 검색!
+                from naver_blog import search_naver_blog  # 상단에 임포트 되어 있어야 함
+                blog_query = f"{region} {places[0]['name']}"  # 예: 서울 을지로 한식 우래옥
+                blog_posts = search_naver_blog(blog_query)
+
         except Exception as e:
             places = [{"name": f"에러 발생: {e}", "address": ""}]
+            blog_posts = []  # 에러 시 안전하게 초기화
 
-        # ✅ 2. YouTube API도 같은 검색어로
+        #  2. 유튜브 검색
         youtube_videos = search_youtube_videos(f"{search_query} 맛집 추천")
 
     return render_template("food.html",
                            places=places,
                            youtube_videos=youtube_videos,
+                           blog_posts=blog_posts,  #  블로그 데이터 넘기기
                            kakao_key=os.environ["KAKAO_JAVASCRIPT_KEY"],
                            center_lat=center_lat,
                            center_lng=center_lng,
                            selected_category=selected_category,
-                           region=region
-                           )
+                           region=region)
 
 
-# ✅ 카페 페이지
+#  카페 페이지
 @app.route("/cafe", methods=["GET", "POST"])
 def cafe():
     places = []
     youtube_videos = []
-    center_lat = 37.5665  # 기본 서울 중심
-    center_lng = 126.9780
-    selected_category = ""  # ✅ 선택된 카테고리 유지용
-    region = ""  # ✅ 입력값 유지용
+    blog_posts = []  # 블로그 리스트 초기화
+    center_lat = 37.241086  # 기본 독도 중심
+    center_lng = 131.864436
+    selected_category = ""  #  선택된 카테고리 유지용
+    region = ""  #  입력값 유지용
 
     if request.method == "POST":
         region = request.form.get("region")
-        category = request.form.get("category")  # ✅ select 박스에서 받아옴
-        selected_category = category  # ✅ 템플릿에서 선택 유지할 변수로 넘김
+        category = request.form.get("category")  #  select 박스에서 받아옴
+        selected_category = category  #  템플릿에서 선택 유지할 변수로 넘김
 
-        # ✅ 검색어 조합 (예: 을지로 디저트카페)
+        #  검색어 조합 (예: 을지로 디저트카페)
         search_query = f"{region} {category}".strip() if category else region
 
-        # ✅ Kakao API 호출
+        #  Kakao API 호출
         try:
             REST_KEY = os.environ["KAKAO_REST_API_KEY"]
             url = "https://dapi.kakao.com/v2/local/search/keyword.json"
             headers = {"Authorization": f"KakaoAK {REST_KEY}"}
-            params = {"query": f"{search_query} 카페", "size": 10}
+            params = {"query": f"{search_query} 카페", "size": 15}
 
             res = requests.get(url, headers=headers, params=params)
             res.raise_for_status()
@@ -572,46 +579,53 @@ def cafe():
                 center_lat = float(places[0]["lat"])
                 center_lng = float(places[0]["lng"])
 
+                from naver_blog import search_naver_blog
+                blog_query = f"{region} {places[0]['name']}"
+                blog_posts = search_naver_blog(blog_query)
+
         except Exception as e:
             places = [{"name": f"에러 발생: {e}", "address": ""}]
+            blog_posts = [] # 에러 시 안전하게 초기화
 
-        # ✅ YouTube 영상 검색
+        #  YouTube 영상 검색
         youtube_videos = search_youtube_videos(f"{search_query} 카페 추천")
 
     return render_template("cafe.html",
                            places=places,
                            youtube_videos=youtube_videos,
+                           blog_posts=blog_posts,  # 블로그 데이터 넘기기
                            kakao_key=os.environ["KAKAO_JAVASCRIPT_KEY"],
                            center_lat=center_lat,
                            center_lng=center_lng,
-                           selected_category=selected_category,  # ✅ 템플릿에서 카테고리 유지
+                           selected_category=selected_category,  #  템플릿에서 카테고리 유지
                            region=region)  # ✅ 템플릿에서 지역 유지
 
 
-# ✅ 숙소 페이지
+#  숙소 페이지
 @app.route("/acc", methods=["GET", "POST"])
 def acc():
     places = []
     youtube_videos = []
-    center_lat = 37.5665  # 서울 기본 좌표
-    center_lng = 126.9780
-    selected_category = ""  # 숙소 종류 선택값 유지용
+    blog_posts = []  # 블로그 리스트 초기화
+    center_lat = 37.241086  # 기본 독도 중심
+    center_lng = 131.864436
+    selected_category = ""  # 선택된 숙소 카테고리 유지용
     region = ""  # 지역 입력값 유지용
 
     if request.method == "POST":
         region = request.form.get("region")
         category = request.form.get("category")
-        selected_category = category  # 템플릿에서 유지되도록
+        selected_category = category
 
-        # ✅ 검색어 조합 (예: 제주도 리조트)
+        # 검색어 조합 (예: 제주도 리조트)
         search_query = f"{region} {category}".strip() if category else region
 
-        # ✅ Kakao API 숙소 검색
+        # Kakao API 호출
         try:
             REST_KEY = os.environ["KAKAO_REST_API_KEY"]
             url = "https://dapi.kakao.com/v2/local/search/keyword.json"
             headers = {"Authorization": f"KakaoAK {REST_KEY}"}
-            params = {"query": f"{search_query} 숙소", "size": 10}
+            params = {"query": f"{search_query} 숙소", "size": 15}
 
             res = requests.get(url, headers=headers, params=params)
             res.raise_for_status()
@@ -634,15 +648,22 @@ def acc():
                 center_lat = float(places[0]["lat"])
                 center_lng = float(places[0]["lng"])
 
+                #  네이버 블로그 후기 검색
+                from naver_blog import search_naver_blog
+                blog_query = f"{region} {places[0]['name']}"
+                blog_posts = search_naver_blog(blog_query)
+
         except Exception as e:
             places = [{"name": f"에러 발생: {e}", "address": ""}]
+            blog_posts = []
 
-        # ✅ 유튜브 숙소 영상 추천
+        # 유튜브 추천 영상
         youtube_videos = search_youtube_videos(f"{search_query} 숙소 추천")
 
     return render_template("acc.html",
                            places=places,
                            youtube_videos=youtube_videos,
+                           blog_posts=blog_posts,  # 블로그 정보 전달
                            kakao_key=os.environ["KAKAO_JAVASCRIPT_KEY"],
                            center_lat=center_lat,
                            center_lng=center_lng,
